@@ -8,21 +8,29 @@ dotenv.config({ path: "./.env" });
 
 const port = process.env.PORT;
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server,{
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
 
 // Socket.io connection handling
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined the chat`);
+  socket.on("join", ({ sender, receiver }) => {
+    const room = `${sender}-${receiver}`;
+    socket.join(room);
+    console.log(`User ${sender} joined the chat with ${receiver}`);
   });
 
   socket.on("message", (message) => {
     try {
       // Broadcast the message to the specific room
-      io.to(message.receiver).emit("message", message);
+      const room = `${message.sender}-${message.receiver}`; 
+      console.log("message",message)
+      io.to(room).emit("message", message);
     } catch (error) {
       console.error("Error broadcasting message:", error);
     }
@@ -32,6 +40,7 @@ io.on("connection", (socket) => {
     console.log("User disconnected");
   });
 });
+
 
 connectDB()
   .then(() => {
