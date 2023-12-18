@@ -1,0 +1,10 @@
+---now todo----
+ models 
+  userModel
+  
+ controllers 
+  userController 
+  
+ routes 
+  userRoutes 
+ 
